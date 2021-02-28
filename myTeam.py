@@ -1,3 +1,4 @@
+import random
 from pacai.util import reflection
 from pacai.agents.capture.capture import CaptureAgent
 from pacai.core.directions import Directions
@@ -23,5 +24,9 @@ def createTeam(firstIndex, secondIndex, isRed,
 
 class ExpectimaxAgent(CaptureAgent):
 
+    def __init__(self, index, timeForComputing=0.1):
+        super().__init__(index)
+        self.agentIndex = index
+
     def chooseAction(self, gameState):
-        return Directions.STOP
+        return random.choice(gameState.getLegalActions(self.agentIndex))
