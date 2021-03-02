@@ -4,8 +4,8 @@ from pacai.agents.capture.capture import CaptureAgent
 from pacai.core.directions import Directions
 
 def createTeam(firstIndex, secondIndex, isRed,
-        first = 'pacai.agents.capture.dummy.DummyAgent',
-        second = 'pacai.agents.capture.dummy.DummyAgent'):
+        first = 'pacai.student.myTeam.[DefenseAgent]',
+        second = 'pacai.student.myTeam.[OffenseAgent]'):
     """
     This function should return a list of two agents that will form the capture team,
     initialized using firstIndex and secondIndex as their agent indexed.
@@ -13,8 +13,8 @@ def createTeam(firstIndex, secondIndex, isRed,
     and will be False if the blue team is being created.
     """
 
-    firstAgent = ExpectimaxAgent
-    secondAgent = ExpectimaxAgent
+    firstAgent = DefenseAgent
+    secondAgent = OffenseAgent
 
     return [
         firstAgent(firstIndex),
@@ -48,10 +48,14 @@ class ExpectimaxAgent(CaptureAgent):
         return {closestEnemy, enemyPos}
 
 
+# Inherits from ExpectimaxAgent
+class DefenseAgent(ExpectimaxAgent):
+    pass
 
-class defenseAgent(CaptureAgent):
 
-class offenseAgent(CaptureAgent):
+# Inherits from ExpectimaxAgent
+class OffenseAgent(ExpectimaxAgent):
+    pass
 
 #THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
 '''
