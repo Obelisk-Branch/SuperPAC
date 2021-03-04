@@ -1,4 +1,6 @@
 import random
+import abc
+from pacai.util import util
 from pacai.util import reflection
 from pacai.agents.capture.capture import CaptureAgent
 from pacai.core.directions import Directions
@@ -29,33 +31,98 @@ class ExpectimaxAgent(CaptureAgent):
         self.agentIndex = index
 
     def chooseAction(self, gameState):
-        return random.choice(gameState.getLegalActions(self.agentIndex))
+        # Loop through legal actions to find the one with the best value
+        actions = gameState.getLegalActions(self.agentIndex)
+        bestValue = float('-inf')
+        bestAction = Directions.STOP
+        for action in actions:
+            value = self.getActionValue(action)
+            if (value > bestValue):
+                bestValue = value
+                bestAction = action
+        return bestAction
 
-    def getClosestEnemy(agent, agentIndex):
-        gameState = CaptureAgent.getCurrentObservation(agent)
-        enemiesList = CaptureAgent.getOpponents(gameState)
-        selfPos = gameState.getAgentPosition(agentIndex)
+    # Copied from ReflexCaptureAgent
+    def getSuccessor(self, gameState, action):
+        """
+        Finds the next successor which is a grid position (location tuple).
+        """
+
+        successor = gameState.generateSuccessor(self.agentIndex, action)
+        pos = successor.getAgentState(self.agentIndex).getPosition()
+        if (pos != util.nearestPoint(pos)):
+            # Only half a grid position was covered.
+            return successor.generateSuccessor(self.agentIndex, action)
+        else:
+            return successor
+
+    # Deriving classes must override this to calculate the value of an action
+    @abc.abstractmethod
+    def getActionValue(self, action):
+        return 0
+
+    def getClosestEnemy(self):
+        gameState = self.getCurrentObservation()
+        enemiesList = self.getOpponents(gameState)
+        selfPos = gameState.getAgentPosition(self.agentIndex)
 
         distance = 9999999999
         closestEnemy = None
         #Check distance between given agent and every enemy, return closest enemy index and distance
-        for enemies in enemiesList:
-            enemyPos = gameState.getAgentPosition(enemies)
-            distanceBetween = CaptureAgent.getMazeDistance(selfPos, enemy)
+        for enemy in enemiesList:
+            enemyPos = gameState.getAgentPosition(enemy)
+            distanceBetween = self.getMazeDistance(selfPos, enemyPos)
             if distanceBetween < distance:
                 distance = distanceBetween
                 closestEnemy = enemy
-        return {closestEnemy, enemyPos}
+        return closestEnemy
 
 
 # Inherits from ExpectimaxAgent
 class DefenseAgent(ExpectimaxAgent):
-    pass
+
+    def getActionValue(self, action):
+        value = 0
+        gameState = self.getCurrentObservation()
+        selfPos = gameState.getAgentPosition(self.agentIndex)
+        nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
+        if self.red:
+            if nextPos[0] >= gameState.getWalls().getWidth() / 2:
+                return -1
+        elif nextPos[0] < gameState.getWalls().getWidth() / 2:
+            return -1
+
+        enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
+        enemyDist = self.getMazeDistance(nextPos, enemyPos)
+        if enemyDist < 5:
+            if enemyDist > 0:
+                value = 1.0 / enemyDist
+            else:
+                value = 2
+        else:
+            defendingFood = self.getFoodYouAreDefending(gameState).asList()
+            defendingFood += self.getCapsulesYouAreDefending(gameState)
+            closeFood = None
+            closeFoodDist = float('inf')
+            for food in defendingFood:
+                dist = self.getMazeDistance(food, enemyPos)
+                if dist < closeFoodDist:
+                    closeFoodDist = dist
+                    closeFood = food
+
+            if closeFood is not None:
+                dist = self.getMazeDistance(nextPos, closeFood)
+                if dist > 0:
+                    value = 1.0 / dist
+                else:
+                    value = 2
+        return value
 
 
 # Inherits from ExpectimaxAgent
 class OffenseAgent(ExpectimaxAgent):
-    pass
+    def getActionValue(self, action):
+        return 0
 
 #THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
 '''
