@@ -26,57 +26,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 
 class ExpectimaxAgent(CaptureAgent):
 
-    def __init__(self, index, timeForComputing=0.1):
-        super().__init__(index)
-        self.agentIndex = index
-
-    def chooseAction(self, gameState):
-        # Loop through legal actions to find the one with the best value
-        actions = gameState.getLegalActions(self.agentIndex)
-        bestValue = float('-inf')
-        bestAction = Directions.STOP
-        for action in actions:
-            value = self.getActionValue(action)
-            if (value > bestValue):
-                bestValue = value
-                bestAction = action
-        return bestAction
-
-    # Copied from ReflexCaptureAgent
-    def getSuccessor(self, gameState, action):
-        """
-        Finds the next successor which is a grid position (location tuple).
-        """
-
-        successor = gameState.generateSuccessor(self.agentIndex, action)
-        pos = successor.getAgentState(self.agentIndex).getPosition()
-        if (pos != util.nearestPoint(pos)):
-            # Only half a grid position was covered.
-            return successor.generateSuccessor(self.agentIndex, action)
-        else:
-            return successor
-
-    # Deriving classes must override this to calculate the value of an action
-    @abc.abstractmethod
-    def getActionValue(self, action):
-        return 0
-
-    def getClosestEnemy(self):
-        gameState = self.getCurrentObservation()
-        enemiesList = self.getOpponents(gameState)
-        selfPos = gameState.getAgentPosition(self.agentIndex)
-
-        distance = 9999999999
-        closestEnemy = None
-        #Check distance between given agent and every enemy, return closest enemy index and distance
-        for enemy in enemiesList:
-            enemyPos = gameState.getAgentPosition(enemy)
-            distanceBetween = self.getMazeDistance(selfPos, enemyPos)
-            if distanceBetween < distance:
-                distance = distanceBetween
-                closestEnemy = enemy
-        return closestEnemy
-
+    
 
 # Inherits from ExpectimaxAgent
 class DefenseAgent(ExpectimaxAgent):
@@ -119,10 +69,203 @@ class DefenseAgent(ExpectimaxAgent):
         return value
 
 
+
+# Inherits from ExpectimaxAgent
+
+class OffenseAgent(ExpectimaxAgent):
+
+    def __init__(self, index, timeForComputing=0.1):
+        super().__init__(index)
+        self.agentIndex = index
+        self.eFood = None
+        self.eFoodPercent = 0
+        self.totalFoodStart = 0
+        self.powerTimeLeft = 0
+        self.nextAction = None
+
+    def chooseAction(self, gameState):
+        # Loop through legal actions to find the one with the best value
+        actions = gameState.getLegalActions(self.agentIndex)
+        bestValue = float('-inf')
+        bestAction = Directions.STOP
+        for action in actions:
+            value = self.getActionValue(action)
+            if (value > bestValue):
+                bestValue = value
+                bestAction = action
+        return bestAction
+
+<<<<<<< HEAD
+         # Copied from ReflexCaptureAgent
+=======
+    # Copied from ReflexCaptureAgent
+>>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+    def getSuccessor(self, gameState, action):
+        """
+        Finds the next successor which is a grid position (location tuple).
+        """
+
+        successor = gameState.generateSuccessor(self.agentIndex, action)
+        pos = successor.getAgentState(self.agentIndex).getPosition()
+        if (pos != util.nearestPoint(pos)):
+            # Only half a grid position was covered.
+            return successor.generateSuccessor(self.agentIndex, action)
+        else:
+            return successor
+
+<<<<<<< HEAD
+   # Deriving classes must override this to calculate the value of an action
+=======
+    # Deriving classes must override this to calculate the value of an action
+>>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+    @abc.abstractmethod
+    def getActionValue(self, action):
+        return 0
+
+<<<<<<< HEAD
+    def getClosestEnemy(agent, agentIndex):
+        gameState = CaptureAgent.getCurrentObservation(agent)
+        enemiesList = CaptureAgent.getOpponents(gameState)
+        selfPos = gameState.getAgentPosition(agentIndex)
+=======
+    def getClosestEnemy(self):
+        gameState = self.getCurrentObservation()
+        enemiesList = self.getOpponents(gameState)
+        selfPos = gameState.getAgentPosition(self.agentIndex)
+>>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+
+        distance = 9999999999
+        closestEnemy = None
+        #Check distance between given agent and every enemy, return closest enemy index and distance
+        for enemy in enemiesList:
+            enemyPos = gameState.getAgentPosition(enemy)
+            distanceBetween = self.getMazeDistance(selfPos, enemyPos)
+            if distanceBetween < distance:
+                distance = distanceBetween
+                closestEnemy = enemy
+        return closestEnemy
+
+        #set amount of enemy food on the board at beginning of game
+    def setEFoodRemaining(self, gameState):
+        if self.eFood is None:
+            self.totalFoodStart = gameState.getNumFood()
+            self.eFood = (gameState.getNumFood()) / 2
+            #Agents should update self.eFood every time they eat a pellet
+        return
+    def eFoodQuery(self, gameState):
+        if self.eFood is not None:
+            self.eFoodQuery = self.eFood / (self.totalFoodStart / 2)
+        return self.eFoodQuery
+
+<<<<<<< HEAD
+    def scaredEnemyQuery(self, gameState):
+        if self.powerTimeLeft == 0:
+            return False
+        '''
+        This is pseudocode because we don't have the route mechanism fleshed out yet
+=======
+# Inherits from ExpectimaxAgent
+class DefenseAgent(ExpectimaxAgent):
+
+    def getActionValue(self, action):
+        value = 0
+        gameState = self.getCurrentObservation()
+        selfPos = gameState.getAgentPosition(self.agentIndex)
+        nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
+        if self.red:
+            if nextPos[0] >= gameState.getWalls().getWidth() / 2:
+                return -1
+        elif nextPos[0] < gameState.getWalls().getWidth() / 2:
+            return -1
+
+        enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
+        enemyDist = self.getMazeDistance(nextPos, enemyPos)
+        if enemyDist < 5:
+            if enemyDist > 0:
+                value = 1.0 / enemyDist
+            else:
+                value = 2
+        else:
+            defendingFood = self.getFoodYouAreDefending(gameState).asList()
+            defendingFood += self.getCapsulesYouAreDefending(gameState)
+            closeFood = None
+            closeFoodDist = float('inf')
+            for food in defendingFood:
+                dist = self.getMazeDistance(food, enemyPos)
+                if dist < closeFoodDist:
+                    closeFoodDist = dist
+                    closeFood = food
+
+            if closeFood is not None:
+                dist = self.getMazeDistance(nextPos, closeFood)
+                if dist > 0:
+                    value = 1.0 / dist
+                else:
+                    value = 2
+        return value
+>>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+
+        #This gets the time it would take for pacman to reach the scared ghost
+        routeTime = getRoute(scaredEnemy)
+
+        #If pacman can reach the scared ghost before it becomes brave, chase it 
+        if routeTime <= self.powerTimeLeft:
+            return Route
+
+        #If pacman can't reach the ghost, plan a route for the food far away from the ghost
+        if routeTime > self.powerTimeLeft:
+            return "Can't Reach Ghost"
+        return False
+        '''
+    def getPolicy(self, gameState):
+
+    def goToClosestFood(self, gameState):
+        agentPos = gameState.getAgentPosition(self.agentIndex)
+        actions = gameState.getLegalActions(self.agentIndex)
+
+        distanceToFood = []
+        enemyFood = gameState.getFood()
+
+
+
+
+    def chooseAction(self, gameState):
+        setEFoodRemaining(gameState)
+
+        eFood = eFoodQuery(gameState) 
+
+        if (eFood <= (self.totalFoodStart / 2) / 3):
+            #Switch to Defense somehow
+        else:
+            pacmanLocation = pacLocationQuery
+
+        if pacmanLocation == 'HOME':
+
+            # Go to closest enemy dot
+
+        if pacmanLocation == 'ENEMY':
+
+            #if enemy ghosts are scared
+            
+
+
+    def pacLocationQuery(self, gameState):
+        pacPos = gameState.getAgentPosition(self.agentIndex)
+        x, y = pacPos
+
+        #not sure if this works, supposed to check whether pac is on enemy side or home side
+        if (x < 0):
+            return 'ENEMY'
+        else:
+            return 'HOME'
+
+<<<<<<< HEAD
+=======
 # Inherits from ExpectimaxAgent
 class OffenseAgent(ExpectimaxAgent):
     def getActionValue(self, action):
         return 0
+>>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
 
 #THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
 '''
@@ -183,3 +326,4 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         return max(actionsDict, key = actionsDict.get)
 '''
+
