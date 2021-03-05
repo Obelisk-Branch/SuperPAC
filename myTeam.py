@@ -95,11 +95,10 @@ class OffenseAgent(ExpectimaxAgent):
                 bestAction = action
         return bestAction
 
-<<<<<<< HEAD
+
          # Copied from ReflexCaptureAgent
-=======
-    # Copied from ReflexCaptureAgent
->>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+
+
     def getSuccessor(self, gameState, action):
         """
         Finds the next successor which is a grid position (location tuple).
@@ -113,26 +112,21 @@ class OffenseAgent(ExpectimaxAgent):
         else:
             return successor
 
-<<<<<<< HEAD
-   # Deriving classes must override this to calculate the value of an action
-=======
+
     # Deriving classes must override this to calculate the value of an action
->>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
     @abc.abstractmethod
     def getActionValue(self, action):
         return 0
 
-<<<<<<< HEAD
     def getClosestEnemy(agent, agentIndex):
         gameState = CaptureAgent.getCurrentObservation(agent)
         enemiesList = CaptureAgent.getOpponents(gameState)
         selfPos = gameState.getAgentPosition(agentIndex)
-=======
+
     def getClosestEnemy(self):
         gameState = self.getCurrentObservation()
         enemiesList = self.getOpponents(gameState)
         selfPos = gameState.getAgentPosition(self.agentIndex)
->>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
 
         distance = 9999999999
         closestEnemy = None
@@ -152,12 +146,12 @@ class OffenseAgent(ExpectimaxAgent):
             self.eFood = (gameState.getNumFood()) / 2
             #Agents should update self.eFood every time they eat a pellet
         return
+        
     def eFoodQuery(self, gameState):
         if self.eFood is not None:
             self.eFoodQuery = self.eFood / (self.totalFoodStart / 2)
         return self.eFoodQuery
 
-<<<<<<< HEAD
     def scaredEnemyQuery(self, gameState):
         if self.powerTimeLeft == 0:
             return False
@@ -203,7 +197,6 @@ class DefenseAgent(ExpectimaxAgent):
                 else:
                     value = 2
         return value
->>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
 
         #This gets the time it would take for pacman to reach the scared ghost
         routeTime = getRoute(scaredEnemy)
@@ -226,6 +219,8 @@ class DefenseAgent(ExpectimaxAgent):
         distanceToFood = []
         enemyFood = gameState.getFood()
 
+        return
+
 
 
 
@@ -246,6 +241,19 @@ class DefenseAgent(ExpectimaxAgent):
         if pacmanLocation == 'ENEMY':
 
             #if enemy ghosts are scared
+
+
+        #This is placeholder code that chooses a random action until chooseAction is finished
+        actions = gameState.getLegalActions(self.agentIndex)
+        bestValue = float('-inf')
+        bestAction = Directions.STOP
+        for action in actions:
+            value = self.getActionValue(action)
+            if (value > bestValue):
+                bestValue = value
+                bestAction = action
+        return bestAction
+
             
 
 
@@ -258,14 +266,10 @@ class DefenseAgent(ExpectimaxAgent):
             return 'ENEMY'
         else:
             return 'HOME'
+        return
 
-<<<<<<< HEAD
-=======
-# Inherits from ExpectimaxAgent
-class OffenseAgent(ExpectimaxAgent):
-    def getActionValue(self, action):
-        return 0
->>>>>>> eb4c70fba20bbf6919941a8464f7d3a9b436c38e
+
+
 
 #THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
 '''
