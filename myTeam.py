@@ -330,4 +330,83 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         return max(actionsDict, key = actionsDict.get)
 '''
+'''
+--------------------------------------------------------
+#Offensive agent using Minimax with Alpha-Beta Pruning. Our offensive aggent will be the max agent and an enemy 
+#defender(s) will be the MinAgent
+class MiniMaxwithPruning(CaptureAgent):
 
+	def chooseAction(self, gameState):
+
+		def MaxAgent(gameState, depth, alpha, beta):
+
+			#Returns Score if we win, lose, or exceed allowed depth
+			if gameState.getBlueFood().count() == 2 or gameState.getRedFood().count() == 2 or depth >= self.depth
+				return gameState.getScore(self, gameState)
+
+			MaxScore = float("-inf")
+			Score = MaxScore
+			LegalActions = gameState.getLegalActions(gameState, self.agentIndex)
+			bestAction = Directions.STOP
+
+			#For every action in LegalActions, creates a branch where the next node will be the closest enemy's turn
+			for action in LegalActions:
+				Score = MinAgent(gameState.generateSuccessor(self, self.agentIndex, action), self.agentIndex, getClosestEnemy(self), depth, alpha, beta)
+				if Score > MaxScore:
+					MaxScore = Score
+					bestAction = action
+				alpha = max(alpha,MaxScore)
+				if MaxScore > beta:
+					return MaxScore
+			if depth == 0:
+				return bestAction
+			else:
+				return MaxScore
+
+		#Probelm: Modification is needed as this casues an ifinite loop
+		def MinAgent(gameState, prevAgent, currentAgent, depth, alpha, beta):
+
+			if gameState.getBlueFood().count() == 2 or gameState.getRedFood().count() == 2 or depth >= self.depth
+				return gameState.getScore
+
+			#This Checks what team the closest ghost is on and if their teammate is a ghost
+			#If the teammate is another ghost, the next agent to expand on will be the 2nd ghost
+			#If the teammate is not another ghost(i.e on offense) then the next agent to expand on will be our Maxagent 
+			if CaptureGameState.isOnRedTeam(self, currentAgent)
+				RedTeamIndices = CaptureGameState.getRedTeamIndices(self)
+				if RedTeamIndices[0] == currentAgent
+					nextAgent = RedTeamIndices[1]
+				else:
+					nextAgent = RedTeamIndices[0]
+			else:
+				BlueTeamIndices = CaptureGameState.getBlueTeamIndices(self)
+				if BlueTeamIndices[0] == currentAgent
+					nextAgent = BlueTeamIndices[1]
+				else:
+					nextAgent = BlueTeamIndices[0]
+			if CaptureGameState.isOnRedTeam(self,nextAgent) and CaptureGameState.isOnRedSide(self,nextAgent)
+				nextAgent = prevAgent
+			if CaptureGameState.isOnBlueTeam(self,nextAgent) and CaptureGameState.isOnBlueSide(self,nextAgent)
+				nextAgent = prevAgent
+
+			MinScore = float("-inf")
+			Score = MinScore
+			LegalActions = gameState.getLegalActions(gameState, currentAgent)
+			
+			#For every action in LegalActions, creates a branch where the next node will be either a different defending ghost or
+			#our MaxAgent depending on nextAgent
+			for action in LegalActions:
+				if nextAgent == prevAgent
+					if depth == self.depth - 1:
+						Score = -1 * gameState.getScore(self, gameState.generateSuccessor(self, currentAgent, action))
+					else:
+						Score = MaxAgent(gameState.generateSuccessor(self, currentAgent, action), depth + 1, alpha, beta)
+				else
+					Score = MinAgent(gameState.generateSuccessor(self, currentAgent, action), currentAgent, nextAgent, depth, alpha, beta)
+				if score < MinScore
+					MinScore = Score
+				beta = min(beta, MinScore)
+				if MinScore < alpha
+					return MinScore
+			return MinScore
+'''
