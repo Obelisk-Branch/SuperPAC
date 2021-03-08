@@ -24,7 +24,7 @@ def createTeam(firstIndex, secondIndex, isRed,
     ]
 
 
-class ExpectimaxAgent(CaptureAgent):
+class ReflexAgent(CaptureAgent):
 
     def __init__(self, index, timeForComputing=0.1):
         super().__init__(index)
@@ -93,8 +93,8 @@ class ExpectimaxAgent(CaptureAgent):
         return deepestEnemy
 
 
-# Inherits from ExpectimaxAgent
-class DefenseAgent(ExpectimaxAgent):
+# Inherits from ReflexAgent
+class DefenseAgent(ReflexAgent):
 
     def getActionValue(self, action):
         value = 0
@@ -134,14 +134,14 @@ class DefenseAgent(ExpectimaxAgent):
         return value
 
 
-# Inherits from ExpectimaxAgent
-class OffenseAgent(ExpectimaxAgent):
+# Inherits from ReflexAgent
+class OffenseAgent(ReflexAgent):
     def getActionValue(self, action):
         return 0
 
 # THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
 '''
-class ExpectimaxAgent(MultiAgentSearchAgent):
+class ReflexAgent(MultiAgentSearchAgent):
     """
     An expectimax agent.
 
