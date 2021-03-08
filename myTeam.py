@@ -36,7 +36,7 @@ class ReflexAgent(CaptureAgent):
         bestValue = float('-inf')
         bestAction = Directions.STOP
         for action in actions:
-            value = self.getActionValue(action)
+            value = self.getActionValxue(action)
             if (value > bestValue):
                 bestValue = value
                 bestAction = action
@@ -136,65 +136,40 @@ class DefenseAgent(ReflexAgent):
 
 # Inherits from ReflexAgent
 class OffenseAgent(ReflexAgent):
+
     def getActionValue(self, action):
-        return 0
+        value = 0
+         gameState = self.getCurrentObservation()
+        selfPosition = gameState.getAgentPosition(self.agentIndex)
+        nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
+        if self.red:
+            if nextPos[0] >= gameState.getWalls().getWidth() / 2:
+                return -1
+        elif nextPos[0] < gameState.getWalls().getWidth() / 2:
+            return -1
 
-# THIS IS CAMERON'S SALVAGED p2 CODE FOR EXPECTIMAX
-'''
-class ReflexAgent(MultiAgentSearchAgent):
-    """
-    An expectimax agent.
+        enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
+        enemyDist = self.getMazeDistance(nextPos, enemyPos)
+        if enemyDist < 5:
+            if enemyDist > 0:
+                value = 1.0 / enemyDist
+            else:
+                value = 0
+        else:
+            attackingFood = self.getFood(gameState).asList()
+            attackingFood += self.getCapsules(gameState)
+            closeFood = None
+            closeFoodDist = float('inf')
+            for food in atackingFood:
+                dist = self.getMazeDistance(food, enemyPos)
+                if dist < closeFoodDist:
+                    closeFoodDist = dist
+                    closeFood = food
 
-    All ghosts should be modeled as choosing uniformly at random from their legal moves.
-
-    Method to Implement:
-
-    `pacai.agents.base.BaseAgent.getAction`:
-
-    Returns the expectimax action from the current gameState using
-    `pacai.agents.search.multiagent.MultiAgentSearchAgent.getTreeDepth`
-    and `pacai.agents.search.multiagent.MultiAgentSearchAgent.getEvaluationFunction`.
-    """
-    def getAction(self, state):
-
-        def maxValue(state, agent, depth):
-            agent = 0
-            legalMaxActions = state.getLegalActions(agent)
-
-            if state._gameover is True or depth >= self.depth or len(legalMaxActions) == 0:
-                return self.getEvaluationFunction()(state)
-            v = float('-inf')
-            v = v + 1
-            maxVal = max(expValue(state.generateSuccessor(agent, actions),
-             agent + 1, depth + 1) for actions in legalMaxActions)
-            return maxVal
-
-        #  Function to give expected value
-        def expValue(state, agent, depth):
-            legalExpActions = state.getLegalActions(agent)
-            lenActions = len(legalActions)
-
-            ev = 0
-            if lenActions != 0:
-                prob = 1 / lenActions
-            if lenActions == 0 or state._gameover is True or depth >= self.depth:
-                return self.getEvaluationFunction()(state)
-            for actions in legalExpActions:
-
-                successor = state.generateSuccessor(agent, actions)
-                if agent != state.getNumAgents() - 1:
-                    expVal = expValue(successor, agent + 1, depth)
+            if closeFood is not None:
+                dist = self.getMazeDistance(nextPos, closeFood)
+                if dist > 0:
+                    value = 2.0 / dist
                 else:
-                    expVal = maxValue(successor, agent, depth)
-                ev += (prob * expVal)
-            return ev
-
-        legalActions = state.getLegalActions(0)
-        actionsDict = {}
-        for actions in legalActions:
-            agentInd = 1
-            gameState = state.generateSuccessor(0, actions)
-            actionsDict[actions] = expValue(gameState, agentInd, 1)
-
-        return max(actionsDict, key = actionsDict.get)
-'''
+                    value = 2
+        return value
