@@ -29,6 +29,9 @@ class ReflexAgent(CaptureAgent):
     def __init__(self, index, timeForComputing=0.1):
         super().__init__(index)
         self.agentIndex = index
+        self.CapsuleTime = 0
+        self.lastCapsuleEaten = None
+        self.capsuleSelfPos = None
 
     def chooseAction(self, gameState):
         # Loop through legal actions to find the one with the best value
@@ -36,7 +39,7 @@ class ReflexAgent(CaptureAgent):
         bestValue = float('-inf')
         bestAction = Directions.STOP
         for action in actions:
-            value = self.getActionValxue(action)
+            value = self.getActionValue(action)
             if (value > bestValue):
                 bestValue = value
                 bestAction = action
@@ -139,8 +142,13 @@ class OffenseAgent(ReflexAgent):
 
     def getActionValue(self, action):
         value = 0
-         gameState = self.getCurrentObservation()
+        gameState = self.getCurrentObservation()
         selfPosition = gameState.getAgentPosition(self.agentIndex)
+        if selfPosition is not self.capsuleSelfPos:
+            if self.CapsuleTime > 0:
+                self.CapsuleTime -= 1
+            self.capsuleSelfPos = selfPosition
+
         nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
         if self.red:
             if nextPos[0] >= gameState.getWalls().getWidth() / 2:
@@ -151,11 +159,25 @@ class OffenseAgent(ReflexAgent):
 
         enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
+        lastCapsule = self.getLastCapsuleEaten()
+        if lastCapsule is not None:
+            if self.lastCapsuleEaten is None:
+                self.lastCapsuleEaten = lastCapsule
+                self.CapsuleTime = 40
+            if self.lastCapsuleEaten is not None and self.lastCapsuleEaten is not lastCapsule:
+                self.CapsuleTime = 40
+
+
         if enemyDist < 5:
             if enemyDist > 0:
-                value = -(1.0 / enemyDist)
+                value = (1.0 / enemyDist)
             else:
                 value = -5
+        if enemyDist < 5 and self.CapsuleTime > 0:
+            if enemyDist > 0:
+                value = 5.0 / enemyDist
+            else:
+                value = 7
         else:
             attackingFood = self.getFood(gameState).asList()
             attackingFood += self.getCapsules(gameState)
@@ -167,6 +189,14 @@ class OffenseAgent(ReflexAgent):
                     closeFoodDist = dist
                     closeFood = food
 
+                    '''
+            for capsules in self.getCapsules(gameState):
+                dist = self.getMazeDistance(capsules, enemy)
+                pacdist = self.getMazeDistance(capsules, nextPos)
+                if pacdist < dist:
+                    value = 5.0/dist
+                    return value
+                    '''
             if closeFood is not None:
                 dist = self.getMazeDistance(nextPos, closeFood)
                 if dist > 0:
