@@ -16,7 +16,7 @@ def createTeam(firstIndex, secondIndex, isRed,
     """
 
     firstAgent = DefenseAgent
-    secondAgent = reflection.qualifiedImport('pacai.agents.capture.offense.OffensiveReflexAgent')
+    secondAgent = reflection.qualifiedImport('pacai.agents.capture.offense.OffensiveReflexAgent')  # Replace with OffenseAgent when implemented
 
     return [
         firstAgent(firstIndex),
