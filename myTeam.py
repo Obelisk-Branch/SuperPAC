@@ -16,7 +16,7 @@ def createTeam(firstIndex, secondIndex, isRed,
     """
 
     firstAgent = DefenseAgent
-    secondAgent = reflection.qualifiedImport('pacai.agents.capture.offense.OffensiveReflexAgent')  # Replace with OffenseAgent when implemented
+    secondAgent = OffenseAgent
 
     return [
         firstAgent(firstIndex),
@@ -36,7 +36,7 @@ class ReflexAgent(CaptureAgent):
         bestValue = float('-inf')
         bestAction = Directions.STOP
         for action in actions:
-            value = self.getActionValxue(action)
+            value = self.getActionValue(action)
             if (value > bestValue):
                 bestValue = value
                 bestAction = action
@@ -50,7 +50,7 @@ class ReflexAgent(CaptureAgent):
 
         successor = gameState.generateSuccessor(self.agentIndex, action)
         pos = successor.getAgentState(self.agentIndex).getPosition()
-        if (pos != util.nearestPoint(pos)):
+        if pos != util.nearestPoint(pos):
             # Only half a grid position was covered.
             return successor.generateSuccessor(self.agentIndex, action)
         else:
@@ -139,21 +139,15 @@ class OffenseAgent(ReflexAgent):
 
     def getActionValue(self, action):
         value = 0
-         gameState = self.getCurrentObservation()
+        gameState = self.getCurrentObservation()
         selfPosition = gameState.getAgentPosition(self.agentIndex)
         nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
-        if self.red:
-            if nextPos[0] >= gameState.getWalls().getWidth() / 2:
-                return -1
-        elif nextPos[0] < gameState.getWalls().getWidth() / 2:
-            return -1
-
 
         enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
-        if enemyDist < 5:
+        if enemyDist < 5 and False:
             if enemyDist > 0:
-                value = -(1.0 / enemyDist)
+                value -= 1.0 / enemyDist
             else:
                 value = -5
         else:
@@ -170,7 +164,7 @@ class OffenseAgent(ReflexAgent):
             if closeFood is not None:
                 dist = self.getMazeDistance(nextPos, closeFood)
                 if dist > 0:
-                    value = 2.0 / dist
+                    value = 1.0 / dist
                 else:
                     value = 2
         return value
