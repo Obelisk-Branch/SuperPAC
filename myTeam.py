@@ -1,6 +1,5 @@
 import abc
 from pacai.util import util
-from pacai.util import reflection
 from pacai.agents.capture.capture import CaptureAgent
 from pacai.core.directions import Directions
 
