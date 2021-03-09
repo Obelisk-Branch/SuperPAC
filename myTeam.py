@@ -157,11 +157,19 @@ class OffenseAgent(ReflexAgent):
             if self.CapsuleTime > 0:
                 self.CapsuleTime -= 1
             self.capsuleSelfPos = selfPosition
-
+        successor = self.getSuccessor(gameState, action)
         nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
         enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
         lastCapsule = self.lastCapsuleEaten
+        '''
+        #If you're on the enemy side, don't move back over to your side
+        if self.red:
+            if selfPosition[0] >= gameState.getWalls().getWidth() / 2 and nextPos[0] < gameState.getWalls().getWidth() / 2:
+                return -1
+        elif not self.red and selfPosition[0] <= gameState.getWalls().getWidth() / 2 and nextPos[0] > gameState.getWalls().getWidth() / 2:
+                return -1
+        '''
         if lastCapsule is not None:
             if self.lastCapsuleEaten is None:
                 self.lastCapsuleEaten = lastCapsule
@@ -169,23 +177,27 @@ class OffenseAgent(ReflexAgent):
             if self.lastCapsuleEaten is not None and self.lastCapsuleEaten is not lastCapsule:
                 self.CapsuleTime = 40
 
+        #If you're getting chased by a ghost, run
         if enemyDist < 5:
             if enemyDist > 0:
-                value = (1.0 / enemyDist)
+                value = -(1.0 / enemyDist)
             else:
                 value = -5
-        if enemyDist < 5 and self.CapsuleTime > 0:
+                
+        if enemyDist < 5 and self.CapsuleTime > 0 and self.CapsuleTime is not None:
             if enemyDist > 0:
                 value = 5.0 / enemyDist
             else:
                 value = 7
+                
+        #otherwise, go after the nearest food
         else:
             attackingFood = self.getFood(gameState).asList()
             attackingFood += self.getCapsules(gameState)
             closeFood = None
             closeFoodDist = float('inf')
             for food in attackingFood:
-                dist = self.getMazeDistance(food, enemyPos)
+                dist = self.getMazeDistance(nextPos, food)
                 if dist < closeFoodDist:
                     closeFoodDist = dist
                     closeFood = food
@@ -202,6 +214,7 @@ class OffenseAgent(ReflexAgent):
                 dist = self.getMazeDistance(nextPos, closeFood)
                 if dist > 0:
                     value = 1.0 / dist
+
                 else:
                     value = 2
         return value
