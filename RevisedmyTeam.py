@@ -151,9 +151,9 @@ class OffenseAgent(ReflexAgent):
 
     def getActionValue(self, action):
         
+        gameState = self.getCurrentObservation()
         if(self.getScore(gameState) > 2):
             value = 0
-            gameState = self.getCurrentObservation()
             nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
             # Prevent moving to other team's side by devaluing positions on their side
             if self.red:
@@ -200,7 +200,6 @@ class OffenseAgent(ReflexAgent):
 
         else:
             value = 0
-            gameState = self.getCurrentObservation()
             selfPosition = gameState.getAgentPosition(self.agentIndex)
             if selfPosition is not self.capsuleSelfPos:
                 if self.CapsuleTime > 0:
