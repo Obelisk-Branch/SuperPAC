@@ -1,4 +1,3 @@
-# import random
 import abc
 from pacai.util import util
 from pacai.util import reflection
@@ -33,6 +32,7 @@ class ReflexAgent(CaptureAgent):
         self.lastCapsuleEaten = None
         self.capsuleSelfPos = None
 
+    # Returns the best action to take based on the game state
     def chooseAction(self, gameState):
         # Loop through legal actions to find the one with the best value
         actions = gameState.getLegalActions(self.agentIndex)
@@ -40,7 +40,7 @@ class ReflexAgent(CaptureAgent):
         bestAction = Directions.STOP
         for action in actions:
             value = self.getActionValue(action)
-            if (value > bestValue):
+            if value > bestValue:
                 bestValue = value
                 bestAction = action
         return bestAction
@@ -64,12 +64,14 @@ class ReflexAgent(CaptureAgent):
     def getActionValue(self, action):
         return 0
 
+    # Returns the closest enemy
     def getClosestEnemy(self):
         gameState = self.getCurrentObservation()
         enemiesList = self.getOpponents(gameState)
         selfPos = gameState.getAgentPosition(self.agentIndex)
 
-        distance = 9999999999
+        # Loop through enemies to find the closest one based on maze distance
+        distance = float("inf")
         closestEnemy = None
         for enemy in enemiesList:
             enemyPos = gameState.getAgentPosition(enemy)
@@ -79,10 +81,12 @@ class ReflexAgent(CaptureAgent):
                 closestEnemy = enemy
         return closestEnemy
 
+    # Returns the enemy deepest into our side
     def getDeepestEnemy(self):
         gameState = self.getCurrentObservation()
         enemiesList = self.getOpponents(gameState)
 
+        # Loop through enemies to find the one with the greatest or least x-position based on team
         depth = -1
         deepestEnemy = None
         for enemy in enemiesList:
@@ -99,35 +103,41 @@ class ReflexAgent(CaptureAgent):
 # Inherits from ReflexAgent
 class DefenseAgent(ReflexAgent):
 
+    # Return the value of the action if taken
     def getActionValue(self, action):
         value = 0
         gameState = self.getCurrentObservation()
-        # selfPos = gameState.getAgentPosition(self.agentIndex)
         nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
+        # Prevent moving to other team's side by devaluing positions on their side
         if self.red:
             if nextPos[0] >= gameState.getWalls().getWidth() / 2:
                 return -1
         elif nextPos[0] < gameState.getWalls().getWidth() / 2:
             return -1
 
+        # Get maze distance to the deepest enemy
         enemyPos = gameState.getAgentPosition(self.getDeepestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
+        # If the enemy is close, chase them
         if enemyDist < 5:
             if enemyDist > 0:
                 value = 1.0 / enemyDist
             else:
                 value = 2
-        else:
+        else:  # Otherwise defend food that is closest to deepest enemy
+            # Put food and capsules in same list to defend
             defendingFood = self.getFoodYouAreDefending(gameState).asList()
             defendingFood += self.getCapsulesYouAreDefending(gameState)
             closeFood = None
             closeFoodDist = float('inf')
+            # Find the food closest to the enemy
             for food in defendingFood:
                 dist = self.getMazeDistance(food, enemyPos)
                 if dist < closeFoodDist:
                     closeFoodDist = dist
                     closeFood = food
 
+            # Move toward food closest to enemy
             if closeFood is not None:
                 dist = self.getMazeDistance(nextPos, closeFood)
                 if dist > 0:
@@ -140,12 +150,6 @@ class DefenseAgent(ReflexAgent):
 # Inherits from ReflexAgent
 class OffenseAgent(ReflexAgent):
 
-    def __init__(self, index, timeForComputing=0.1):
-        super().__init__(index)
-        self.lastCapsuleEaten = None
-        self.CapsuleTime = 0
-        self.capsuleSelfPos = (0, 0)
-
     def getActionValue(self, action):
         value = 0
         gameState = self.getCurrentObservation()
@@ -156,7 +160,6 @@ class OffenseAgent(ReflexAgent):
             self.capsuleSelfPos = selfPosition
 
         nextPos = self.getSuccessor(gameState, action).getAgentState(self.agentIndex).getPosition()
-
         enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
         lastCapsule = self.lastCapsuleEaten
