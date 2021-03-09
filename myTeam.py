@@ -140,6 +140,12 @@ class DefenseAgent(ReflexAgent):
 # Inherits from ReflexAgent
 class OffenseAgent(ReflexAgent):
 
+    def __init__(self, index, timeForComputing=0.1):
+        super().__init__(index)
+        self.lastCapsuleEaten = None
+        self.CapsuleTime = 0
+        self.capsuleSelfPos = (0, 0)
+
     def getActionValue(self, action):
         value = 0
         gameState = self.getCurrentObservation()
@@ -153,14 +159,13 @@ class OffenseAgent(ReflexAgent):
 
         enemyPos = gameState.getAgentPosition(self.getClosestEnemy())
         enemyDist = self.getMazeDistance(nextPos, enemyPos)
-        lastCapsule = self.getLastCapsuleEaten()
+        lastCapsule = self.lastCapsuleEaten
         if lastCapsule is not None:
             if self.lastCapsuleEaten is None:
                 self.lastCapsuleEaten = lastCapsule
                 self.CapsuleTime = 40
             if self.lastCapsuleEaten is not None and self.lastCapsuleEaten is not lastCapsule:
                 self.CapsuleTime = 40
-
 
         if enemyDist < 5:
             if enemyDist > 0:
